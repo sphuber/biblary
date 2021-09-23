@@ -1,1 +1,29 @@
-<h1>Biblary</h1>
+{% block content %}
+<h1 class="biblary-header">Biblary</h1>
+
+{% for entry in entries %}
+
+{% ifchanged entry.year %}
+{% if not forloop.first %}
+</ul>
+{% endif %}
+<h2 class="biblary-year">{{ entry.year }}</h2>
+<ul class="biblary-year">
+{% endifchanged %}
+
+    <li>
+        <h3>{{ entry.title }}</h3>
+        <div class="biblary-entry-authors">
+            {% for author in entry.author %}<span class="biblary-entry-author">{{ author }}</span>{% endfor %}
+        </div>
+        {% if entry.journal %}<span class="biblary-entry-journal">{{ entry.journal }}</span>
+        {% elif entry.publisher %}<span class="biblary-entry-publisher">{{ entry.publisher }}</span>{% endif %}
+        {% if entry.volume %}<span class="biblary-entry-volume">{{ entry.volume }}</span>{% endif %}
+        {% if entry.issue %}<span class="biblary-entry-issue">{{ entry.issue }}</span>{% endif %}
+        {% if entry.pages %}<span class="biblary-entry-pages">{{ entry.pages }}</span>{% endif %}
+        <span class="biblary-entry-year">({{ entry.year }})</span>
+        <a class="biblary-entry-doi" href="https://dx.doi.org/{{ entry.doi }}">{{ entry.doi }}</a>
+    </li>
+
+{% endfor %}
+{% endblock %}
