@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from .adapter import BibliographyAdapter
 from .entry import BibliographyEntry
 from .exceptions import InvalidBibliographyError
+from .storage import AbstractStorage
 
 
 class Bibliography(Mapping):
@@ -20,7 +21,7 @@ class Bibliography(Mapping):
     entry from the collection.
     """
 
-    def __init__(self, adapter: BibliographyAdapter):
+    def __init__(self, adapter: BibliographyAdapter, storage: t.Optional[AbstractStorage] = None):
         """Construct a new bibliography instance.
 
         :param adapter: bibliography adapter that provides access to the bibliography backend.
@@ -29,6 +30,7 @@ class Bibliography(Mapping):
             raise TypeError(f'`adapter` should be an instance of `BibliographyAdapter`, but got: `{adapter}`.')
 
         self.adapter: BibliographyAdapter = adapter
+        self.storage: t.Optional[AbstractStorage] = storage
         self._entries: t.Dict[str, BibliographyEntry] = self._initialize_entries()
 
     def __getitem__(self, key) -> BibliographyEntry:

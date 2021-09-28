@@ -5,10 +5,11 @@ import typing as t
 
 import pytest
 
-from biblary.bibliography.adapter.abstract import BibliographyAdapter
+from biblary.bibliography.adapter import BibliographyAdapter
 from biblary.bibliography.bibliography import Bibliography
 from biblary.bibliography.entry import BibliographyEntry
 from biblary.bibliography.exceptions import InvalidBibliographyError
+from biblary.bibliography.storage import AbstractStorage, FileType
 
 
 class MockAdapter(BibliographyAdapter):
@@ -22,6 +23,18 @@ class MockAdapter(BibliographyAdapter):
     def get_entries(self):
         """Return the list of bibliographic entries for this bibliography."""
         return self._entries
+
+
+class MockStorage(AbstractStorage):
+    """Mock implementation of :class:`biblary.bibliography.adapter.abstract.BibliographyAdapter`."""
+
+    def get_file(self, entry: BibliographyEntry, file_type: t.Union[FileType, str]) -> bytes:
+        """Return the byte content of a file with the given type for the given bibliographic entry."""
+        return b''
+
+    def exists(self, entry: BibliographyEntry, file_type: t.Union[FileType, str]) -> bool:
+        """Return whether the file with the given type for the given bibliographic entry exists."""
+        return True
 
 
 @pytest.fixture
@@ -47,6 +60,10 @@ def test_bibliography_constructor():
     adapter = MockAdapter()
     bibliography = Bibliography(adapter=adapter)
     assert bibliography.adapter is adapter
+
+    storage = MockStorage()
+    bibliography = Bibliography(adapter=adapter, storage=storage)
+    assert bibliography.storage is storage
 
 
 def test_bibliography_constructor_invalid():
