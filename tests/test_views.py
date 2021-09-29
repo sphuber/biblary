@@ -1,42 +1,75 @@
 # -*- coding: utf-8 -*-
 """Tests for the :mod:`biblary.views` module."""
+import re
+
 import pytest
-from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 
-from biblary.bibliography import Bibliography
-from biblary.views import BiblaryIndexView
+from biblary.bibliography.storage import FileType
 
 
-def test_biblary_index_get(override_settings, client, filepath_bibtex):
-    """Test the :class:`biblary.views:BiblaryIndexView` view ``GET`` method."""
-    with override_settings(bibliography_adapter_configuration={'filepath': filepath_bibtex}):
+def test_biblary_index_get(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryIndexView` view ``GET`` method without storage configured."""
+    with get_bibliography(bibliography_storage=None):
         url = reverse('index')
         response = client.get(url)
         content = response.content.decode(response.charset)
         assert response.status_code == 200
         assert 'Biblary' in content
+        assert 'biblary-entry-files' not in content
+
+
+def test_biblary_index_get_with_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryIndexView` view ``GET`` method with storage configured."""
+    with get_bibliography():
+        url = reverse('index')
+        response = client.get(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert 'Biblary' in content
+        assert 'biblary-entry-files' in content
+
+
+def test_biblary_file_get(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryFileView` view ``GET`` method."""
+    with get_bibliography() as bibliography:
+        content = b'some-content'
+        file_type = FileType.MANUSCRIPT
+        entry = list(bibliography.values())[0]
+
+        url_kwargs = {
+            'file_type': file_type.value,
+            'identifier': entry.identifier,
+        }
+
+        bibliography.write_content(bibliography, entry, file_type, content)
+
+        url = reverse('file', kwargs=url_kwargs)
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response.content == content
+        assert response.headers['Content-Type'] == 'application/pdf'
+        assert response.headers['Content-Disposition'] == f'attachment; filename="{file_type.value}.pdf"'
 
 
 @pytest.mark.parametrize(
-    'adapter, configuration, exception, match', (
-        ('non.adapter.BibliographyAdapter', {}, ImproperlyConfigured, r'module of the .* cannot be imported.'),
-        ('biblary.bibliography.adapter.Adapter', {}, ImproperlyConfigured, r'class of the .* cannot be imported.'),
-        ('biblary.bibliography.adapter.BibtexBibliography', {}, ImproperlyConfigured, r'failed to construct.* adapter'),
+    'identifier, file_type, status, match', (
+        ('Einstein_1905', 'invalid', 400, r'The requested file type `.*` is invalid.'),
+        ('A', 'manuscript', 404, r'The requested bibliographic entry `.*` does not exist'),
+        ('Einstein_1905', 'manuscript', 404, r'The requested file `.*` does not exist.'),
     )
 )
-def test_biblary_index_get_bibliography_invalid_configuration(
-    override_settings, adapter, configuration, exception, match
-):
-    """Test the :meth:`biblary.views:BiblaryIndexView.get_bibliography` method for invalid configurations."""
-    with override_settings(bibliography_adapter=adapter, bibliography_adapter_configuration=configuration):
-        with pytest.raises(exception, match=match):
-            BiblaryIndexView().get_bibliography()
+def test_biblary_file_get_raises(get_bibliography, client, identifier, file_type, status, match):
+    """Test the :class:`biblary.views:BiblaryFileView` view ``GET`` method when it should raise."""
+    with get_bibliography():
+        kwargs = {'identifier': identifier, 'file_type': file_type}
+        url = reverse('file', kwargs=kwargs)
+        response = client.get(url)
 
+        try:
+            exception = response.context['exception_value']
+        except KeyError:
+            exception = response.context['exception']
 
-def test_biblary_index_get_bibliography(override_settings, filepath_bibtex):
-    """Test the :meth:`biblary.views:BiblaryIndexView.get_bibliography` method."""
-    with override_settings(bibliography_adapter_configuration={'filepath': filepath_bibtex}):
-        bibliography = BiblaryIndexView().get_bibliography()
-        assert isinstance(bibliography, Bibliography)
-        assert bibliography.adapter.filepath == filepath_bibtex
+        assert response.status_code == status
+        assert re.match(match, exception)

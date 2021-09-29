@@ -35,5 +35,18 @@ class Settings:
         """Return the dictionary that will be passed as keyword arguments of the bibliography adapter constructor."""
         return self._get_setting('BIBLIOGRAPHY_ADAPTER_CONFIGURATION', {})
 
+    @property
+    def bibliography_storage(self) -> t.Optional[str]:
+        """Return the full import path of the bibliography storage implementation to use.
+
+        The value should be an implementation of :class:`biblary.bibliography.storage.abstract.AbstractStorage`.
+        """
+        return self._get_setting('BIBLIOGRAPHY_STORAGE', None)
+
+    @property
+    def bibliography_storage_configuration(self) -> dict:
+        """Return the dictionary that will be passed as keyword arguments of the bibliography storage constructor."""
+        return self._get_setting('BIBLIOGRAPHY_STORAGE_CONFIGURATION', {})
+
 
 settings: Settings = Settings('BIBLARY')

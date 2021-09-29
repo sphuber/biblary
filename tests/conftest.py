@@ -7,6 +7,9 @@ import typing as t
 
 import pytest
 
+from biblary.bibliography import Bibliography
+from biblary.utils import BibliographyMixin
+
 
 @pytest.fixture
 def override_settings() -> t.Callable:
@@ -33,3 +36,42 @@ def filepath_bibtex(tmp_path) -> pathlib.Path:
         handle.flush()
 
     yield filepath_target
+
+
+@pytest.fixture
+def get_bibliography(tmp_path, filepath_bibtex, override_settings) -> t.Callable:
+    """Yield a configured bibliography for a particular set of configuration settings."""
+
+    @contextlib.contextmanager
+    def _get_bibliograhy(**settings) -> Bibliography:
+        """Yield a configured bibliography for a particular set of configuration settings.
+
+        :param **settings: keyword arguments that will be configured as temporary settings.
+        """
+
+        def write_content(self, entry, file_type, content):
+            """Write the given byte content to the configured storage for the given entry and file type.
+
+            This method should be removed once the storage interface provides a method to write files.
+            """
+            filepath = self.storage.get_filepath(entry, file_type)
+            filepath.parent.mkdir(exist_ok=True, parents=True)
+            filepath.write_bytes(content)
+
+        default_settings = {
+            'bibliography_storage': 'biblary.bibliography.storage.file_system.FileSystemStorage',
+            'bibliography_storage_configuration': {
+                'filepath': tmp_path
+            },
+            'bibliography_adapter_configuration': {
+                'filepath': filepath_bibtex
+            },
+        }
+        default_settings.update(**settings)
+
+        with override_settings(**default_settings):
+            bibliography = BibliographyMixin.get_bibliography()
+            bibliography.write_content = write_content
+            yield bibliography
+
+    return _get_bibliograhy

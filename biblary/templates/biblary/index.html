@@ -12,17 +12,36 @@
 {% endifchanged %}
 
     <li>
-        <h3>{{ entry.title }}</h3>
-        <div class="biblary-entry-authors">
-            {% for author in entry.author %}<span class="biblary-entry-author">{{ author }}</span>{% endfor %}
+        <div class="biblary-entry-data">
+            <h3>{{ entry.title }}</h3>
+            <div class="biblary-entry-authors">
+                {% for author in entry.author %}<span class="biblary-entry-author">{{ author }}</span>{% endfor %}
+            </div>
+            {% if entry.journal %}<span class="biblary-entry-journal">{{ entry.journal }}</span>
+            {% elif entry.publisher %}<span class="biblary-entry-publisher">{{ entry.publisher }}</span>{% endif %}
+            {% if entry.volume %}<span class="biblary-entry-volume">{{ entry.volume }}</span>{% endif %}
+            {% if entry.issue %}<span class="biblary-entry-issue">{{ entry.issue }}</span>{% endif %}
+            {% if entry.pages %}<span class="biblary-entry-pages">{{ entry.pages }}</span>{% endif %}
+            <span class="biblary-entry-year">({{ entry.year }})</span>
+            <a class="biblary-entry-doi" href="https://dx.doi.org/{{ entry.doi }}">{{ entry.doi }}</a>
         </div>
-        {% if entry.journal %}<span class="biblary-entry-journal">{{ entry.journal }}</span>
-        {% elif entry.publisher %}<span class="biblary-entry-publisher">{{ entry.publisher }}</span>{% endif %}
-        {% if entry.volume %}<span class="biblary-entry-volume">{{ entry.volume }}</span>{% endif %}
-        {% if entry.issue %}<span class="biblary-entry-issue">{{ entry.issue }}</span>{% endif %}
-        {% if entry.pages %}<span class="biblary-entry-pages">{{ entry.pages }}</span>{% endif %}
-        <span class="biblary-entry-year">({{ entry.year }})</span>
-        <a class="biblary-entry-doi" href="https://dx.doi.org/{{ entry.doi }}">{{ entry.doi }}</a>
+        {% if entry.files %}
+        <div class="biblary-entry-files">
+            <ul>
+                {% for file_type, exists in entry.files.items %}
+                <li>
+                    {% if exists %}
+                    <a class="biblary-entry-file-{{ file_type }}" href="{% url 'biblary:file' entry.identifier file_type %}" title="Download {{ file_type }}">
+                        <span class="octicon"></span>
+                    </a>
+                    {% else %}
+                    <a class="biblary-entry-file-{{ file_type }} disabled" title="No {{ file_type }} available for download"><span class="octicon"></span></a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </li>
 
 {% endfor %}
