@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=redefined-outer-name
 """Tests for the :mod:`biblary.bibliography.storage.file_system` module."""
+import io
+
 import pytest
 
 from biblary.bibliography.entry import BibliographyEntry
@@ -57,6 +59,21 @@ def test_get_file_non_existing(file_storage):
 
     with pytest.raises(FileNotFoundError):
         file_storage.get_file(entry, FileType.MANUSCRIPT)
+
+
+@pytest.mark.parametrize('content', (b'test-content', io.BytesIO(b'test-content')))
+def test_put_file(file_storage, content):
+    """Test the :meth:`biblary.bibliography.storage.file_system.FileSystemStorage.put_file` method."""
+    entry = BibliographyEntry('article', 1)
+    file_type = FileType.MANUSCRIPT
+
+    file_storage.put_file(content, entry, file_type)
+
+    if isinstance(content, bytes):
+        assert file_storage.get_file(entry, file_type) == content
+    else:
+        content.seek(0)
+        assert file_storage.get_file(entry, file_type) == content.read()
 
 
 def test_get_file_invalid_type(file_storage):

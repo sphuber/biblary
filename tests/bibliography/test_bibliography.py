@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=redefined-outer-name
 """Tests for the :mod:`biblary.bibliography.bibliography` module."""
+import io
 import typing as t
 
 import pytest
@@ -31,6 +32,9 @@ class MockStorage(AbstractStorage):
     def get_file(self, entry: BibliographyEntry, file_type: t.Union[FileType, str]) -> bytes:
         """Return the byte content of a file with the given type for the given bibliographic entry."""
         return b''
+
+    def put_file(self, content: t.Union[io.BytesIO, bytes], entry: BibliographyEntry, file_type: FileType) -> None:
+        """Write the given byte content for the given bibliographic entry and file type."""
 
     def exists(self, entry: BibliographyEntry, file_type: t.Union[FileType, str]) -> bool:
         """Return whether the file with the given type for the given bibliographic entry exists."""

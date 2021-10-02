@@ -2,6 +2,8 @@
 """Abstract class that represents the interface to a file store of files associated with bibliographic entries."""
 import abc
 import enum
+import io
+import typing as t
 
 from ..entry import BibliographyEntry
 
@@ -29,6 +31,15 @@ class AbstractStorage(abc.ABC):
         :param entry: the :class:`biblary.bibliographic.entry.BibliographicEntry` for which to retrieve the file.
         :param file_type: the file type to retrieve for the given entry.
         :raises ``FileNotFoundError``: if the file of the given type does not exist for the given entry.
+        """
+
+    @abc.abstractmethod
+    def put_file(self, content: t.Union[io.BytesIO, bytes], entry: BibliographyEntry, file_type: FileType) -> None:
+        """Write the given byte content for the given bibliographic entry and file type.
+
+        :param entry: the :class:`biblary.bibliographic.entry.BibliographicEntry` for which to retrieve the file.
+        :param file_type: the file type to retrieve for the given entry.
+        :raises ``TypeError``: if the ``content`` is not a byte-stream or pure bytes.
         """
 
     @abc.abstractmethod

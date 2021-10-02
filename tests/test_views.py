@@ -42,7 +42,7 @@ def test_biblary_file_get(get_bibliography, client):
             'identifier': entry.identifier,
         }
 
-        bibliography.write_content(bibliography, entry, file_type, content)
+        bibliography.storage.put_file(content, entry, file_type)
 
         url = reverse('file', kwargs=url_kwargs)
         response = client.get(url)
