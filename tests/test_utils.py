@@ -56,3 +56,18 @@ def test_bibliography_mixin_get_bibliography(override_settings, filepath_bibtex)
         bibliography = BibliographyMixin.get_bibliography()
         assert isinstance(bibliography, Bibliography)
         assert bibliography.adapter.filepath == filepath_bibtex
+
+
+@pytest.mark.parametrize('storage_required', (True, False))
+def test_bibliography_mixin_get_bibliography_storage_required(override_settings, filepath_bibtex, storage_required):
+    """Test the ``storage_require`` argument of the :meth:`biblary.views:BiblaryIndexView.get_bibliography` method."""
+    with override_settings(
+        bibliography_adapter='biblary.bibliography.adapter.BibtexBibliography',
+        bibliography_adapter_configuration={'filepath': filepath_bibtex}
+    ):
+        if storage_required:
+            with pytest.raises(ImproperlyConfigured):
+                BibliographyMixin.get_bibliography(storage_required=storage_required)
+        else:
+            bibliography = BibliographyMixin.get_bibliography(storage_required=storage_required)
+            assert bibliography.storage is None

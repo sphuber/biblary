@@ -73,3 +73,56 @@ def test_biblary_file_get_raises(get_bibliography, client, identifier, file_type
 
         assert response.status_code == status
         assert re.match(match, exception)
+
+
+def test_biblary_upload_get_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadView` view ``GET`` method without configured file storage."""
+    with get_bibliography(bibliography_storage=None):
+        url = reverse('upload')
+        response = client.get(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert 'Uploading of files is disabled because no file storage has been configured' in content
+
+
+def test_biblary_upload_get_with_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadView` view ``GET`` method with configured file storage."""
+    with get_bibliography():
+        url = reverse('upload')
+        response = client.get(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert '<option value="manuscript">manuscript</option>' in content
+        assert '<option value="preprint">preprint</option>' in content
+        assert '<option value="supplementary">supplementary</option>' in content
+
+
+def test_biblary_upload_post_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadView` view ``POST`` method without configured file storage."""
+    with get_bibliography(bibliography_storage=None):
+        url = reverse('upload')
+        response = client.post(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert 'Uploading of files is disabled because no file storage has been configured' in content
+
+
+def test_biblary_upload_post_with_storage(get_bibliography, client, tmp_path):
+    """Test the :class:`biblary.views:BiblaryUploadView` view ``POST`` method with configured file storage."""
+    with get_bibliography() as bibliography:
+        url = reverse('upload')
+        entry_identifier = 'Einstein_1905'
+        file_type = FileType.MANUSCRIPT
+        content = b'some-content'
+
+        with (tmp_path / 'file.pdf').open('wb+') as handle:
+            handle.write(content)
+            handle.flush()
+            handle.seek(0)
+
+            entry = bibliography[entry_identifier]
+            data = {'entry_identifier': entry_identifier, 'file_type': file_type.value, 'content': handle}
+
+            response = client.post(url, data)
+            assert response.status_code == 302
+            assert bibliography.storage.get_file(entry, file_type) == content

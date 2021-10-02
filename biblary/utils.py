@@ -44,10 +44,13 @@ class BibliographyMixin:
         return instance
 
     @classmethod
-    def get_bibliography(cls) -> Bibliography:
+    def get_bibliography(cls, storage_required=False) -> Bibliography:
         """Construct the bibliography with bibliographic entries from the configured settings.
 
+        :param storage_required: boolean to indicate whether a configured storage is requird.
         :raises :class`django.core.exceptions.ImproperlyConfigured`: if bibliography cannot be properly instantiated.
+        :raises :class`django.core.exceptions.ImproperlyConfigured`: if no storage is configured and the argument
+            ``storage_required`` is set to ``True``.
         """
         from biblary.settings import settings
 
@@ -63,5 +66,8 @@ class BibliographyMixin:
             storage = cls.construct_class(settings.bibliography_storage, settings.bibliography_storage_configuration)
         except ImproperlyConfigured as exc:
             raise ImproperlyConfigured(f'failed to construct the configured bibliography storage: {exc}') from exc
+
+        if storage is None and storage_required:
+            raise ImproperlyConfigured('file storage for this bibliography is required, but none has been configured.')
 
         return Bibliography(adapter, storage=storage)

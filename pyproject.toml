@@ -10,6 +10,7 @@ disable = [
     'duplicate-code',
     'import-outside-toplevel',
     'too-few-public-methods',
+    'too-many-ancestors',
     'too-many-arguments',
     'too-many-instance-attributes',
 ]

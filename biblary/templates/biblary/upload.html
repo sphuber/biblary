@@ -1,0 +1,12 @@
+{% block content %}
+{% if form %}
+Upload a file to the bibliography:
+<form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit">
+</form>
+{% else %}
+<p>Uploading of files is disabled because no file storage has been configured for the bibliography.</p>
+{% endif %}
+{% endblock %}
