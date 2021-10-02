@@ -77,3 +77,35 @@ The constructor should define what keyword arguments it should take in order to 
 The keyword arguments that are specified for the `BIBLARY_BIBLIOGRAPHY_ADAPTER_CONFIGURATION` will be passed to the constructor of the adapter when the bibliography is loaded.
 Finally, the `get_entries` method should be implemented.
 It should return a list of `biblary.bibliography.entry.BiliographyEntry` instances, one for each entry in the bibliography.
+
+
+## Configuration
+
+### `BIBLARY_BIBLIOGRAPHY_MAIN_AUTHOR_PATTERNS`
+
+This setting takes a tuple of regex patterns, for example
+
+```python
+BIBLARY_BIBLIOGRAPHY_MAIN_AUTHOR_PATTERNS = ('Paul Dirac', r'.*Dirac')
+```
+
+The template tag `main_author_class` will use this setting to determine if the author that it is passed is considered a main author.
+If that is the case, the string defined by the `BIBLARY_BIBLIOGRAPHY_MAIN_AUTHOR_CLASS` setting is returned.
+This can be used in the `index` template as follows:
+
+```jinja
+{% for entry in entries %}
+<div class="biblary-entry-authors">
+    {% for author in entry.author %}
+    <span class="biblary-entry-author {% main_author_class author %}">{{ author }}</span>
+    {% endfor %}
+</div>
+{% endfor %}
+```
+
+Any author that will match any of the patterns specified by the setting, will get the additional class.
+
+### `BIBLARY_BIBLIOGRAPHY_MAIN_AUTHOR_CLASS`
+
+Returned by the `main_author_class` tag if the specified author matches any of the patterns defined by the `BIBLARY_BIBLIOGRAPHY_MAIN_AUTHOR_PATTERNS` setting.
+Default is `biblary-entry-author-main`.

@@ -48,5 +48,21 @@ class Settings:
         """Return the dictionary that will be passed as keyword arguments of the bibliography storage constructor."""
         return self._get_setting('BIBLIOGRAPHY_STORAGE_CONFIGURATION', {})
 
+    @property
+    def bibliography_main_author_patterns(self) -> t.Sequence[str]:
+        """Return a sequence of strings that represent authors that should be marked as main author.
+
+        The elements of the sequence can be simple strings or regex patterns.
+        """
+        return self._get_setting('BIBLIOGRAPHY_MAIN_AUTHOR_PATTERNS', ())
+
+    @property
+    def bibliography_main_author_class(self) -> str:
+        """Return the CSS class that is used by the :meth:`biblary.templatetags.authors.main_author_class`.
+
+        This tag can be used in the index template to add this CSS class to main authors.
+        """
+        return self._get_setting('BIBLIOGRAPHY_MAIN_AUTHOR_CLASS', 'biblary-entry-author-main')
+
 
 settings: Settings = Settings('BIBLARY')
