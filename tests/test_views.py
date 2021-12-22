@@ -75,20 +75,20 @@ def test_biblary_file_get_raises(get_bibliography, client, identifier, file_type
         assert re.match(match, exception)
 
 
-def test_biblary_upload_get_without_storage(get_bibliography, client):
-    """Test the :class:`biblary.views:BiblaryUploadView` view ``GET`` method without configured file storage."""
+def test_biblary_upload_file_get_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``GET`` method without configured file storage."""
     with get_bibliography(bibliography_storage=None):
-        url = reverse('upload')
+        url = reverse('upload-file')
         response = client.get(url)
         content = response.content.decode(response.charset)
         assert response.status_code == 200
         assert 'Uploading of files is disabled because no file storage has been configured' in content
 
 
-def test_biblary_upload_get_with_storage(get_bibliography, client):
-    """Test the :class:`biblary.views:BiblaryUploadView` view ``GET`` method with configured file storage."""
+def test_biblary_upload_file_get_with_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``GET`` method with configured file storage."""
     with get_bibliography():
-        url = reverse('upload')
+        url = reverse('upload-file')
         response = client.get(url)
         content = response.content.decode(response.charset)
         assert response.status_code == 200
@@ -97,20 +97,20 @@ def test_biblary_upload_get_with_storage(get_bibliography, client):
         assert '<option value="supplementary">supplementary</option>' in content
 
 
-def test_biblary_upload_post_without_storage(get_bibliography, client):
-    """Test the :class:`biblary.views:BiblaryUploadView` view ``POST`` method without configured file storage."""
+def test_biblary_upload_file_post_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``POST`` method without configured file storage."""
     with get_bibliography(bibliography_storage=None):
-        url = reverse('upload')
+        url = reverse('upload-file')
         response = client.post(url)
         content = response.content.decode(response.charset)
         assert response.status_code == 200
         assert 'Uploading of files is disabled because no file storage has been configured' in content
 
 
-def test_biblary_upload_post_with_storage(get_bibliography, client, tmp_path):
-    """Test the :class:`biblary.views:BiblaryUploadView` view ``POST`` method with configured file storage."""
+def test_biblary_upload_file_post_with_storage(get_bibliography, client, tmp_path):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``POST`` method with configured file storage."""
     with get_bibliography() as bibliography:
-        url = reverse('upload')
+        url = reverse('upload-file')
         entry_identifier = 'Einstein_1905'
         file_type = FileType.MANUSCRIPT
         content = b'some-content'

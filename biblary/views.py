@@ -79,12 +79,12 @@ class BiblaryFileView(BibliographyMixin, View):
         )
 
 
-class BiblaryUploadView(BibliographyMixin, FormView):
+class BiblaryUploadFileView(BibliographyMixin, FormView):
     """View to upload a file of a give file type for a bibliographic entry."""
 
     form_class = BibliographyUploadFileForm
-    success_url = 'upload'
-    template_name = 'biblary/upload.html'
+    success_url = 'upload-file'
+    template_name = 'biblary/upload_file.html'
 
     def get_form(self, form_class: Form = None) -> t.Optional[None]:
         """Return an instance of the form to be used in this view if a file storage has been configured.
