@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module with data class that represents an entry in a bibliography."""
-import typing as t
 from dataclasses import dataclass
+import typing as t
 
 
 @dataclass

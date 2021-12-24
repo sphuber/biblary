@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module that defines the views of this application."""
-import typing as t
 from importlib import import_module
+import typing as t
 
 from django.core.exceptions import ImproperlyConfigured
 

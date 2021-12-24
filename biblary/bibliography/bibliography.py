@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module with class that represents a bibliography."""
-import typing as t
 from collections.abc import Mapping
+import typing as t
 
 from .adapter import BibliographyAdapter
 from .entry import BibliographyEntry

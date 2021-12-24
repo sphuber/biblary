@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests for the :mod:`biblary.utils` module."""
-import pytest
 from django.core.exceptions import ImproperlyConfigured
+import pytest
 
 from biblary.bibliography import Bibliography
 from biblary.bibliography.storage.file_system import FileSystemStorage

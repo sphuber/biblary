@@ -2,8 +2,8 @@
 """Tests for the :mod:`biblary.views` module."""
 import re
 
-import pytest
 from django.urls import reverse
+import pytest
 
 from biblary.bibliography.storage import FileType
 
