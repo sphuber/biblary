@@ -12,3 +12,16 @@ class BibliographyAdapter(abc.ABC):
     @abc.abstractmethod
     def get_entries(self) -> t.List[BibliographyEntry]:
         """Return the list of bibliography entries."""
+
+    @abc.abstractmethod
+    def parse_entry(self, content: str) -> BibliographyEntry:
+        """Parse a new bibliographic entry from a string.
+
+        :param content: the entry in string form.
+        :return: the parsed bibliographic entry.
+        :raises :class:`bibliography.exceptions.BibliographicEntryParsingError`: if parsing fails.
+        """
+
+    @abc.abstractmethod
+    def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
+        """Save the list of entries to the bibliography."""

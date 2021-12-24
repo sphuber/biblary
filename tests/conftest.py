@@ -4,10 +4,11 @@
 import contextlib
 import pathlib
 import typing as t
+import uuid
 
 import pytest
 
-from biblary.bibliography import Bibliography
+from biblary.bibliography import Bibliography, BibliographyEntry
 from biblary.utils import BibliographyMixin
 
 
@@ -34,8 +35,20 @@ def filepath_bibtex(tmp_path) -> pathlib.Path:
     with filepath_target.open('wb') as handle:
         handle.write(filepath_source.read_bytes())
         handle.flush()
+        yield filepath_target
 
-    yield filepath_target
+
+@pytest.fixture
+def get_bibliography_entry() -> BibliographyEntry:
+    """Return a factory to construct a new ``BibliographyEntry``."""
+
+    def _factory(**kwargs):
+        """Return a new ``BibliographyEntry`` where the ``kwargs`` are passed to its constructor."""
+        entry_type = kwargs.pop('entry_type', 'article')
+        identifier = kwargs.pop('identifier', str(uuid.uuid4()))
+        return BibliographyEntry(entry_type, identifier, **kwargs)
+
+    return _factory
 
 
 @pytest.fixture

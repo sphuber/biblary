@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 import typing as t
 
+__all__ = ('BibliographyEntry',)
+
 
 @dataclass
 class BibliographyEntry:

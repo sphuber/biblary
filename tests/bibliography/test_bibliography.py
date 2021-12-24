@@ -25,6 +25,12 @@ class MockAdapter(BibliographyAdapter):
         """Return the list of bibliographic entries for this bibliography."""
         return self._entries
 
+    def parse_entry(self, content: str) -> BibliographyEntry:
+        """Parse a new bibliographic entry from a string."""
+
+    def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
+        """Save the list of entries to the bibliography."""
+
 
 class MockStorage(AbstractStorage):
     """Mock implementation of :class:`biblary.bibliography.adapter.abstract.BibliographyAdapter`."""
