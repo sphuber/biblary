@@ -45,6 +45,10 @@ class Bibliography(Mapping):
         """Return the number of bibliographic entries contained within this bibliography."""
         return len(self._entries)
 
+    def __contains__(self, entry: t.Any) -> bool:
+        """Return whether the bibliography contains the given entry."""
+        return entry.identifier in self._entries
+
     def _initialize_entries(self) -> t.Dict[str, BibliographyEntry]:
         """Initialize the internal mapping of bibliographic entries obtained through the adapter.
 

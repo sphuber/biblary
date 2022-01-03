@@ -89,7 +89,7 @@ def test_bibliography_constructor_invalid():
 
 @pytest.mark.parametrize('entries', (([]), ([BibliographyEntry('a', 1), BibliographyEntry('a', 2)])))
 def test_get_item(get_bibliography, entries):
-    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__get_item` method."""
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__getitem__` method."""
     bibliography = get_bibliography(entries)
 
     for entry in entries:
@@ -98,7 +98,7 @@ def test_get_item(get_bibliography, entries):
 
 @pytest.mark.parametrize('entries', (([]), ([BibliographyEntry('a', 1), BibliographyEntry('a', 2)])))
 def test_iter(get_bibliography, entries):
-    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__iter` method."""
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__iter__` method."""
     bibliography = get_bibliography(entries)
 
     for identifier in bibliography:
@@ -107,9 +107,18 @@ def test_iter(get_bibliography, entries):
 
 @pytest.mark.parametrize('entries', (([]), ([BibliographyEntry('a', 1), BibliographyEntry('a', 2)])))
 def test_len(get_bibliography, entries):
-    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__len` method."""
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__len__` method."""
     bibliography = get_bibliography(entries)
     assert len(bibliography) == len(entries)
+
+
+def test_contains(get_bibliography, get_bibliography_entry):
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.__contains__` method."""
+    entry_one = get_bibliography_entry()
+    entry_two = get_bibliography_entry()
+    bibliography = get_bibliography([entry_one])
+    assert entry_one in bibliography
+    assert entry_two not in bibliography
 
 
 def test_get_entries(get_bibliography):

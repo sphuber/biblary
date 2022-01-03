@@ -56,7 +56,7 @@ def get_bibliography(tmp_path, filepath_bibtex, override_settings) -> t.Callable
     """Yield a configured bibliography for a particular set of configuration settings."""
 
     @contextlib.contextmanager
-    def _get_bibliograhy(**settings) -> Bibliography:
+    def _factory(**settings) -> Bibliography:
         """Yield a configured bibliography for a particular set of configuration settings.
 
         :param **settings: keyword arguments that will be configured as temporary settings.
@@ -76,4 +76,4 @@ def get_bibliography(tmp_path, filepath_bibtex, override_settings) -> t.Callable
             bibliography = BibliographyMixin.get_bibliography()
             yield bibliography
 
-    return _get_bibliograhy
+    return _factory
