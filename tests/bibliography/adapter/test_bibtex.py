@@ -17,6 +17,15 @@ def test_get_entries(filepath_bibtex):
     assert isinstance(entries[0], BibliographyEntry)
 
 
+def test_get_entries_excepts(tmp_path):
+    """Test the :meth:`biblary.bibliography.adapter.bibtex.BibtexBibliography.get_entries` method when it excepts."""
+    filepath_bibtex = tmp_path / 'bibliography.bib'
+    filepath_bibtex.write_text('invalid')
+
+    with pytest.raises(BibliographicEntryParsingError, match='failed to parse entries from bibliography.'):
+        BibtexBibliography(filepath_bibtex).get_entries()
+
+
 def test_parse_entry(filepath_bibtex):
     """Test the :meth:`biblary.bibliography.adapter.bibtex.BibtexBibliography.parse_entry` method."""
     entry = BibtexBibliography(filepath_bibtex).parse_entry(filepath_bibtex.read_text())
@@ -25,7 +34,7 @@ def test_parse_entry(filepath_bibtex):
 
 def test_parse_entry_excepts(filepath_bibtex):
     """Test the :meth:`biblary.bibliography.adapter.bibtex.BibtexBibliography.parse_entry` method when it excepts."""
-    with pytest.raises(BibliographicEntryParsingError, match=r''):
+    with pytest.raises(BibliographicEntryParsingError, match='failed to parse entries from bibliography.'):
         BibtexBibliography(filepath_bibtex).parse_entry('invalid')
 
 

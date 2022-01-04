@@ -36,7 +36,8 @@ class BibtexBibliography(BibliographyAdapter):
         record['author'] = [' '.join(author.split(',')[::-1]).strip() for author in record['author']]
         return record
 
-    def _customize_record(self, record):
+    @classmethod
+    def _customize_record(cls, record):
         """Apply a set of transformations on the provided record."""
         transformers = (
             customization.convert_to_unicode,
@@ -44,7 +45,7 @@ class BibtexBibliography(BibliographyAdapter):
             customization.page_double_hyphen,
             customization.type,
             customization.author,
-            self._transform_authors,
+            cls._transform_authors,
         )
 
         for transformer in transformers:
@@ -76,39 +77,42 @@ class BibtexBibliography(BibliographyAdapter):
             doi=entry.get('doi', None),
         )
 
-    def get_entries(self) -> t.List[BibliographyEntry]:
-        """Return the list of bibliography entries.
+    @classmethod
+    def _parse_bibliography(cls, filelike: t.TextIO) -> t.List[BibliographyEntry]:
+        """Parse bibliographic entries from a text stream that should contain a ``.bib`` bibliography.
 
-        :return: list of bibliographic entries.
+        :param filelike: a filelike object containing the content to parse.
+        :return: list of parsed bibliographic entries.
         :raises :class:`bibliography.exceptions.BibliographicEntryParsingError`: if parsing fails.
         """
         parser = BibTexParser()
-        parser.customization = self._customize_record
+        parser.customization = cls._customize_record
 
-        with self.filepath.open() as handle:
-            database = load(handle, parser=parser)
+        database = load(filelike, parser=parser)
 
-        if not database.entries:
-            raise BibliographicEntryParsingError('failed to parse bibliographic entry from provided content.')
+        if not database.entries or not database.entries[0]:
+            raise BibliographicEntryParsingError('failed to parse entries from bibliography.')
 
-        return [self._convert_entry(entry) for entry in database.entries]
+        return [cls._convert_entry(entry) for entry in database.entries]
 
-    def parse_entry(self, content: str) -> BibliographyEntry:
+    @classmethod
+    def parse_entry(cls, content: str) -> BibliographyEntry:
         """Parse a new bibliographic entry from a string.
 
         :param content: the entry in string form.
         :return: the parsed bibliographic entry.
         :raises :class:`bibliography.exceptions.BibliographicEntryParsingError`: if parsing fails.
         """
-        parser = BibTexParser()
-        parser.customization = self._customize_record
+        return cls._parse_bibliography(io.StringIO(content))[0]
 
-        database = load(io.StringIO(content), parser=parser)
+    def get_entries(self) -> t.List[BibliographyEntry]:
+        """Return the list of bibliography entries.
 
-        if not database.entries:
-            raise BibliographicEntryParsingError('failed to parse bibliographic entry from provided content.')
-
-        return self._convert_entry(database.entries[0])
+        :return: list of bibliographic entries.
+        :raises :class:`bibliography.exceptions.BibliographicEntryParsingError`: if parsing fails.
+        """
+        with self.filepath.open() as handle:
+            return self._parse_bibliography(handle)
 
     def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
         """Save the list of entries to the bibliography.
