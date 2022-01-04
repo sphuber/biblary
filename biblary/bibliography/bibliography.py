@@ -5,7 +5,7 @@ import typing as t
 
 from .adapter import BibliographyAdapter
 from .entry import BibliographyEntry
-from .exceptions import InvalidBibliographyError
+from .exceptions import DuplicateEntryError, InvalidBibliographyError
 from .storage import AbstractStorage
 
 
@@ -81,3 +81,24 @@ class Bibliography(Mapping):
             return sorted(self._entries.values(), key=sort, reverse=reverse)
 
         return list(self._entries.values())
+
+    def add_entry(self, entry: t.Union[BibliographyEntry, str]) -> BibliographyEntry:
+        """Add a new entry.
+
+        :param entry: the entry to add. If it is a ``str``, the method ``parse_entry`` of the adapter will be called to
+            first parse the entry from the string content.
+        :return: the entry that was added.
+        :raises :class:`bibliography.exceptions.BibliographicEntryParsingError`: if parsing fails.
+        :raises :class:`bibliography.exceptions.DuplicateEntryError`: if the bibliography already contains the entry.
+        """
+        if not isinstance(entry, BibliographyEntry):
+            entry = self.adapter.parse_entry(entry)
+
+        if entry in self:
+            raise DuplicateEntryError(
+                f'the bibliography already contains an entry with identifier `{entry.identifier}`.'
+            )
+
+        self._entries[entry.identifier] = entry
+
+        return entry

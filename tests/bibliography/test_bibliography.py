@@ -2,6 +2,7 @@
 # pylint: disable=redefined-outer-name
 """Tests for the :mod:`biblary.bibliography.bibliography` module."""
 import io
+import json
 import typing as t
 
 import pytest
@@ -9,7 +10,11 @@ import pytest
 from biblary.bibliography.adapter import BibliographyAdapter
 from biblary.bibliography.bibliography import Bibliography
 from biblary.bibliography.entry import BibliographyEntry
-from biblary.bibliography.exceptions import InvalidBibliographyError
+from biblary.bibliography.exceptions import (
+    BibliographicEntryParsingError,
+    DuplicateEntryError,
+    InvalidBibliographyError,
+)
 from biblary.bibliography.storage import AbstractStorage, FileType
 
 
@@ -27,6 +32,10 @@ class MockAdapter(BibliographyAdapter):
 
     def parse_entry(self, content: str) -> BibliographyEntry:
         """Parse a new bibliographic entry from a string."""
+        try:
+            return BibliographyEntry(**json.loads(content))
+        except json.JSONDecodeError as exception:
+            raise BibliographicEntryParsingError() from exception
 
     def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
         """Save the list of entries to the bibliography."""
@@ -153,3 +162,25 @@ def test_sort(get_bibliography, sort, reverse, expected):
     """Test sorting the entries directly by iterating over the bibliography as a collection."""
     bibliography = get_bibliography()
     assert [entry.identifier for entry in sorted(bibliography.values(), key=sort, reverse=reverse)] == expected
+
+
+@pytest.mark.parametrize(
+    'entry',
+    (BibliographyEntry(entry_type='article', identifier='123'), '{"entry_type": "article", "identifier": "123"}')
+)
+def test_add_entry(get_bibliography, entry):
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.add_entry` method."""
+    bibliography = get_bibliography()
+    added = bibliography.add_entry(entry)
+    assert added in bibliography
+
+
+def test_add_entry_excepts(get_bibliography):
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.add_entry` method when it excepts."""
+    bibliography = get_bibliography()
+
+    with pytest.raises(BibliographicEntryParsingError):
+        bibliography.add_entry('invalid-content')
+
+    with pytest.raises(DuplicateEntryError):
+        bibliography.add_entry(bibliography.get_entries()[0])
