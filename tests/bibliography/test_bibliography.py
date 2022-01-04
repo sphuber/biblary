@@ -7,7 +7,7 @@ import typing as t
 
 import pytest
 
-from biblary.bibliography.adapter import BibliographyAdapter
+from biblary.bibliography.adapter import BibliographyAdapter, BibtexBibliography
 from biblary.bibliography.bibliography import Bibliography
 from biblary.bibliography.entry import BibliographyEntry
 from biblary.bibliography.exceptions import (
@@ -184,3 +184,19 @@ def test_add_entry_excepts(get_bibliography):
 
     with pytest.raises(DuplicateEntryError):
         bibliography.add_entry(bibliography.get_entries()[0])
+
+
+def test_save(filepath_bibtex):
+    """Test the :meth:`biblary.bibliography.bibliography.Bibliography.save` method."""
+    entry = BibliographyEntry('article', identifier='1', year='1901', author='M. Planck')
+    bibliography = Bibliography(BibtexBibliography(filepath_bibtex))
+    clone = Bibliography(BibtexBibliography(filepath_bibtex))
+
+    added = bibliography.add_entry(entry)
+    assert added in bibliography
+    assert added not in clone
+
+    bibliography.save()
+    clone = Bibliography(BibtexBibliography(filepath_bibtex))
+    assert added in bibliography
+    assert added in clone

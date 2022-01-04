@@ -102,3 +102,7 @@ class Bibliography(Mapping):
         self._entries[entry.identifier] = entry
 
         return entry
+
+    def save(self):
+        """Persist the current state of the bibliography to the original source through the adapter."""
+        self.adapter.save_entries(self.get_entries())
