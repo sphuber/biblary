@@ -5,10 +5,12 @@ import typing as t
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from django.forms import Form
 from django.http.response import Http404, HttpResponse
+from django.urls import reverse_lazy
 from django.views.generic import FormView, TemplateView, View
 
+from .bibliography.exceptions import BibliographicEntryParsingError, DuplicateEntryError
 from .bibliography.storage import FileType
-from .forms import BibliographyUploadFileForm
+from .forms import BibliographyUploadEntryForm, BibliographyUploadFileForm
 from .utils import BibliographyMixin
 
 
@@ -79,14 +81,67 @@ class BiblaryFileView(BibliographyMixin, View):
         )
 
 
+class BiblaryUploadEntryView(BibliographyMixin, FormView):
+    """View to upload a bibliographic entry."""
+
+    form_class = BibliographyUploadEntryForm
+    success_url = reverse_lazy('index')
+    template_name = 'biblary/upload_entry.html'
+
+    def get_form(self, form_class: Form = None) -> t.Optional[Form]:
+        """Return an instance of the form to be used in this view if a file storage has been configured.
+
+        Before returning the form, the choices of the ``entry_identifier`` are defined based on the configured and
+        loaded bibliography. To upload files, a file storage is required. If no file storage is configured, ``None`` is
+        returned instead of the form.
+        """
+        try:
+            self.get_bibliography(storage_required=True)
+        except ImproperlyConfigured:
+            return None
+        else:
+            return super().get_form(form_class)
+
+    def post(self, request, *args, **kwargs):
+        """Validate that a bibliography with file storage has been configured and then forward the request.
+
+        If no bibliography with file storage has been configured, forward to the ``get`` method which should display
+        that the upload functionality is disables since no file storage is configured.
+        """
+        try:
+            self.get_bibliography(storage_required=True)
+        except ImproperlyConfigured:
+            return super().get(request, *args, **kwargs)
+
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form: BibliographyUploadFileForm):
+        """Attempt to add the content as an entry to the bibliography."""
+        content = form.cleaned_data['content']
+        bibliography = self.get_bibliography()
+
+        try:
+            bibliography.add_entry(content)
+        except DuplicateEntryError as exception:
+            form.add_error('content', exception)
+            return super().form_invalid(form)
+        except BibliographicEntryParsingError as exception:
+            form.add_error('content', exception)
+            return super().form_invalid(form)
+
+        bibliography.save()
+
+        return super().form_valid(form)
+
+
 class BiblaryUploadFileView(BibliographyMixin, FormView):
     """View to upload a file of a give file type for a bibliographic entry."""
 
     form_class = BibliographyUploadFileForm
-    success_url = 'upload-file'
+    success_url = reverse_lazy('upload-file')
     template_name = 'biblary/upload_file.html'
 
-    def get_form(self, form_class: Form = None) -> t.Optional[None]:
+    def get_form(self, form_class: Form = None) -> t.Optional[Form]:
         """Return an instance of the form to be used in this view if a file storage has been configured.
 
         Before returning the form, the choices of the ``entry_identifier`` are defined based on the configured and

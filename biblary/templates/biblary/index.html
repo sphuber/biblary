@@ -33,7 +33,7 @@
                 {% for file_type, exists in entry.files.items %}
                 <li>
                     {% if exists %}
-                    <a class="biblary-entry-file-{{ file_type }}" href="{% url 'biblary:file' entry.identifier file_type %}" title="Download {{ file_type }}">
+                    <a class="biblary-entry-file-{{ file_type }}" href="{% url 'file' entry.identifier file_type %}" title="Download {{ file_type }}">
                         <span class="octicon"></span>
                     </a>
                     {% else %}

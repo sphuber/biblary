@@ -75,6 +75,47 @@ def test_biblary_file_get_raises(get_bibliography, client, identifier, file_type
         assert re.match(match, exception)
 
 
+def test_biblary_upload_entry_get_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``GET`` method without configured file storage."""
+    with get_bibliography(bibliography_storage=None):
+        url = reverse('upload-entry')
+        response = client.get(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert 'Uploading of entries is disabled because no file storage has been configured' in content
+
+
+def test_biblary_upload_entry_get_with_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``GET`` method with configured file storage."""
+    with get_bibliography():
+        url = reverse('upload-entry')
+        response = client.get(url)
+        assert response.status_code == 200
+
+
+def test_biblary_upload_entry_post_without_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``POST`` method without configured file storage."""
+    with get_bibliography(bibliography_storage=None):
+        url = reverse('upload-entry')
+        response = client.post(url)
+        content = response.content.decode(response.charset)
+        assert response.status_code == 200
+        assert 'Uploading of entries is disabled because no file storage has been configured' in content
+
+
+def test_biblary_upload_entry_post_with_storage(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryUploadFileView` view ``POST`` method with configured file storage."""
+    with get_bibliography() as bibliography:
+        url = reverse('upload-entry')
+        content = '@article{Testing_1905, author = {Einstein, Albert}}'
+
+        data = {'content': content}
+        response = client.post(url, data)
+        bibliography.refresh()
+        assert response.status_code == 302
+        assert 'Testing_1905' in [entry.identifier for entry in bibliography.get_entries()]
+
+
 def test_biblary_upload_file_get_without_storage(get_bibliography, client):
     """Test the :class:`biblary.views:BiblaryUploadFileView` view ``GET`` method without configured file storage."""
     with get_bibliography(bibliography_storage=None):

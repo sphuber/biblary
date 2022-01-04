@@ -4,7 +4,7 @@ from django import forms
 
 from .bibliography.storage import FileType
 
-__all__ = ('BibliographyUploadFileForm',)
+__all__ = ('BibliographyUploadFileForm', 'BibliographyUploadEntryForm')
 
 
 class FileTypeField(forms.TypedChoiceField):
@@ -41,3 +41,9 @@ class BibliographyUploadFileForm(forms.Form):
     entry_identifier = forms.ChoiceField(label='Entry')
     file_type = FileTypeField(label='Type')
     content = forms.FileField(label='File')
+
+
+class BibliographyUploadEntryForm(forms.Form):
+    """Form to upload a bibligraphic entry."""
+
+    content = forms.CharField(label='', widget=forms.Textarea())

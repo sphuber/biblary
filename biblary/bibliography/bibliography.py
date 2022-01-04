@@ -49,6 +49,14 @@ class Bibliography(Mapping):
         """Return whether the bibliography contains the given entry."""
         return entry.identifier in self._entries
 
+    def refresh(self) -> None:
+        """Refresh the state of the bibliography by parsing the current entries from the adapter.
+
+        This should only have to be called if the bibliography source was updated through another ``Bibliography``
+        instance. When the modification is done through the same instance, it is not necessary to refresh.
+        """
+        self._entries = self._initialize_entries()
+
     def _initialize_entries(self) -> t.Dict[str, BibliographyEntry]:
         """Initialize the internal mapping of bibliographic entries obtained through the adapter.
 
