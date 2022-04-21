@@ -1,5 +1,53 @@
 [build-system]
-requires = ['setuptools>=55.0']
+requires = ['flit_core>=3.4,<4']
+build-backend = 'flit_core.buildapi'
+
+[project]
+name = 'biblary'
+dynamic = ['version']
+description = 'A Django application to provide a bibliography based on a bibtex library.'
+authors = [
+    {name = 'Sebastiaan P. Huber', email = 'mail@sphuber.net'}
+]
+readme = 'README.md'
+license = {file = 'LICENSE.txt'}
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Framework :: Django',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+]
+keywords = ['bibliography', 'django', 'bibtex']
+requires-python = '>=3.7'
+dependencies = [
+    'bibtexparser',
+    'django >= 3.0',
+    'typing-extensions;python_version < "3.8"'
+]
+
+[project.urls]
+Source = 'https://github.com/sphuber/biblary'
+
+[project.optional-dependencies]
+dev = [
+    'pre-commit',
+    'pylint',
+    'pytest',
+    'pytest-django',
+]
+
+[tool.flit.module]
+name = 'biblary'
+
+[tool.flit.sdist]
+exclude = [
+    '.github/',
+    'tests/',
+]
 
 [tool.isort]
 force_sort_within_sections = true
