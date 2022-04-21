@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=redefined-outer-name
 """Tests for the :mod:`biblary.bibliography.adapter.bibtex` module."""
+import io
+
 import pytest
 
 from biblary.bibliography.adapter.bibtex import BibtexBibliography
@@ -48,3 +50,16 @@ def test_save_entries(filepath_bibtex, get_bibliography_entry):
     # Construct new adapter from the same filepath to which the entries were written and retrieve entries to compare.
     adapter = BibtexBibliography(adapter.filepath)
     assert sorted(adapter.get_entries(), key=lambda e: e.identifier) == sorted(entries, key=lambda e: e.identifier)
+
+
+def test_write_entry(get_bibliography_entry):
+    """Test the :meth:`biblary.bibliography.adapter.bibtex.BibtexBibliography.write_entry` method."""
+    entry = get_bibliography_entry()
+    stream = io.StringIO()
+
+    BibtexBibliography.write_entry(entry, stream)
+    stream.seek(0)
+    content = stream.read()
+
+    assert entry.entry_type in content
+    assert entry.identifier in content

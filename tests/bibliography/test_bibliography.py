@@ -30,12 +30,17 @@ class MockAdapter(BibliographyAdapter):
         """Return the list of bibliographic entries for this bibliography."""
         return self._entries
 
-    def parse_entry(self, content: str) -> BibliographyEntry:
+    @classmethod
+    def parse_entry(cls, content: str) -> BibliographyEntry:
         """Parse a new bibliographic entry from a string."""
         try:
             return BibliographyEntry(**json.loads(content))
         except json.JSONDecodeError as exception:
             raise BibliographicEntryParsingError() from exception
+
+    @classmethod
+    def write_entry(cls, entry, stream) -> None:
+        """Write a bibliographic entry formatted as text to the given stream."""
 
     def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
         """Save the list of entries to the bibliography."""

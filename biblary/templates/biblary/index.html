@@ -26,6 +26,7 @@
             {% if entry.pages %}<span class="biblary-entry-pages">{{ entry.pages }}</span>{% endif %}
             <span class="biblary-entry-year">({{ entry.year }})</span>
             <a class="biblary-entry-doi" href="https://dx.doi.org/{{ entry.doi }}">{{ entry.doi }}</a>
+            <a class="biblary-entry-bibtex" href="{% url 'bibtex' entry.identifier %}">Download bibtex</a>
         </div>
         {% if entry.files %}
         <div class="biblary-entry-files">

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module that defines the views of this application."""
+import io
 import typing as t
 
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
@@ -8,6 +9,7 @@ from django.http.response import Http404, HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import FormView, TemplateView, View
 
+from .bibliography.adapter.bibtex import BibtexBibliography
 from .bibliography.exceptions import BibliographicEntryParsingError, DuplicateEntryError
 from .bibliography.storage import FileType
 from .forms import BibliographyUploadEntryForm, BibliographyUploadFileForm
@@ -34,6 +36,45 @@ class BiblaryIndexView(BibliographyMixin, TemplateView):
             context['entries'].append(entry)
 
         return context
+
+
+class BiblaryBibtexView(BibliographyMixin, View):
+    """View that serves the bibliographic entry in bibtex format."""
+
+    def get(self, _, *__, **___) -> HttpResponse:
+        """Return the byte content of the bibliographic entry in bibtex format.
+
+        :returns :class:`django.http.response.HttpResponse`: if the file exists for the specified entry and file type.
+        :raises :class:`django.core.exceptions.SuspiciousOperation`: if the requested file type does not exist.
+        :raises :class:`django.core.exceptions.Http404`: if the bibliographic entry does not exist, or it
+            does but the requested file does not exist.
+        """
+        entry_identifier = self.kwargs['identifier']
+
+        try:
+            bibliography = self.get_bibliography(storage_required=True)
+        except ImproperlyConfigured as exc:
+            raise Http404('No files are available for the current configuration.') from exc
+
+        assert bibliography.storage is not None
+
+        try:
+            entry = bibliography[entry_identifier]
+        except KeyError as exc:
+            raise Http404(f'The requested bibliographic entry `{entry_identifier}` does not exist.') from exc
+
+        stream = io.StringIO()
+        BibtexBibliography.write_entry(entry, stream)
+        stream.seek(0)
+        content = stream.read()
+
+        return HttpResponse(
+            content,
+            headers={
+                'Content-Type': 'application/plain',
+                'Content-Disposition': f'attachment; filename="{entry_identifier}.bib"',
+            }
+        )
 
 
 class BiblaryFileView(BibliographyMixin, View):

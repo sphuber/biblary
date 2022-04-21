@@ -167,3 +167,20 @@ def test_biblary_upload_file_post_with_storage(get_bibliography, client, tmp_pat
             response = client.post(url, data)
             assert response.status_code == 302
             assert bibliography.storage.get_file(entry, file_type) == content
+
+
+def test_biblary_bibtex(get_bibliography, client):
+    """Test the :class:`biblary.views:BiblaryBibtexView` view ``GET`` method."""
+    with get_bibliography() as bibliography:
+        entry = list(bibliography.values())[0]
+
+        url_kwargs = {
+            'identifier': entry.identifier,
+        }
+
+        url = reverse('bibtex', kwargs=url_kwargs)
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response.headers['Content-Type'] == 'application/plain'
+        assert response.headers['Content-Disposition'] == f'attachment; filename="{entry.identifier}.bib"'
+        assert entry.identifier in response.content.decode('utf-8')

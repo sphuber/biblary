@@ -114,6 +114,46 @@ class BibtexBibliography(BibliographyAdapter):
         with self.filepath.open() as handle:
             return self._parse_bibliography(handle)
 
+    @staticmethod
+    def _entry_to_dict(entry: BibliographyEntry) -> dict:
+        """Convert a bibliographic entry to a dictionary.
+
+        :param entry: bibliographic entry to write formatted to stream.
+        :returns: entry in dictionary form.
+        """
+        dictionary = {
+            'ENTRYTYPE': entry.entry_type,
+            'ID': entry.identifier,
+        }
+
+        for field in dataclasses.fields(entry):
+            if field.name in {'identifier', 'entry_type'}:
+                continue
+
+            value = getattr(entry, field.name)
+
+            if value is not None:
+                if field.name == 'author':
+                    authors = ' and '.join([author.strip() for author in value])
+                    dictionary[field.name] = authors
+                else:
+                    dictionary[field.name] = value
+
+        return dictionary
+
+    @classmethod
+    def write_entry(cls, entry: BibliographyEntry, stream: t.TextIO) -> None:
+        """Write an entry in bibtex format to the given stream.
+
+        :param entry: bibliographic entry to write formatted to stream.
+        """
+        writer = BibTexWriter()
+        writer.indent = '    '
+
+        database = BibDatabase()
+        database.entries.append(cls._entry_to_dict(entry))
+        stream.write(writer.write(database))
+
     def save_entries(self, entries: t.List[BibliographyEntry]) -> None:
         """Save the list of entries to the bibliography.
 
@@ -124,24 +164,7 @@ class BibtexBibliography(BibliographyAdapter):
         writer.indent = '    '
 
         for entry in entries:
-            dictionary = {
-                'ENTRYTYPE': entry.entry_type,
-                'ID': entry.identifier,
-            }
-            for field in dataclasses.fields(entry):
-                if field.name in {'identifier', 'entry_type'}:
-                    continue
-
-                value = getattr(entry, field.name)
-
-                if value is not None:
-                    if field.name == 'author':
-                        authors = ' and '.join([author.strip() for author in value])
-                        dictionary[field.name] = authors
-                    else:
-                        dictionary[field.name] = value
-
-            database.entries.append(dictionary)
+            database.entries.append(self._entry_to_dict(entry))
 
         with tempfile.NamedTemporaryFile('w') as handle:
             handle.write(writer.write(database))
